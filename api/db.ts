@@ -152,6 +152,7 @@ export function initDatabase() {
       url TEXT,
       description TEXT NOT NULL,
       contact TEXT,
+      ip_address TEXT,
       status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'processing', 'resolved', 'dismissed')),
       admin_note TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),

@@ -14,6 +14,14 @@ router.post('/', authMiddleware, (req: Request, res: Response): void => {
       return
     }
 
+    // 敏感词过滤
+    const sensitiveWords = ['枪支', '弹药', '毒品', '赌博网站', '色情', '代开发票', '办证', '贷款', '刷单', '兼职', 'vpn', '翻墙', '法轮', '反动', '暴恐']
+    const checkText = (text: string) => sensitiveWords.some(w => text.toLowerCase().includes(w))
+    if (checkText(gameId) || checkText(contactInfo) || (declaration && checkText(declaration))) {
+      res.status(400).json({ success: false, error: '提交内容包含违规信息，请修改后重新提交' })
+      return
+    }
+
     const targetSeasonId = seasonId || (() => {
       const current = db.prepare(
         "SELECT id FROM seasons WHERE status IN ('registering', 'in_progress') ORDER BY number DESC LIMIT 1"
@@ -35,15 +43,19 @@ router.post('/', authMiddleware, (req: Request, res: Response): void => {
       return
     }
 
+    // 记录用户IP地址
+    const clientIp = req.headers['x-forwarded-for'] as string || req.headers['x-real-ip'] as string || req.socket.remoteAddress || ''
+
     // Check if declaration column exists, add if not
     try { db.prepare('SELECT declaration FROM registrations LIMIT 0').get() } catch { db.prepare('ALTER TABLE registrations ADD COLUMN declaration TEXT').run() }
     try { db.prepare('SELECT willing_captain FROM registrations LIMIT 0').get() } catch { db.prepare('ALTER TABLE registrations ADD COLUMN willing_captain INTEGER DEFAULT 0').run() }
+    try { db.prepare('SELECT ip_address FROM registrations LIMIT 0').get() } catch { db.prepare('ALTER TABLE registrations ADD COLUMN ip_address TEXT').run() }
     const result = db.prepare(
-      'INSERT INTO registrations (user_id, season_id, game_id, rank, preferred_positions, contact_info, declaration, willing_captain) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO registrations (user_id, season_id, game_id, rank, preferred_positions, contact_info, declaration, willing_captain, ip_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
     ).run(
       req.user!.id, targetSeasonId, gameId, rank || '未填写',
       JSON.stringify(preferredPositions), contactInfo,
-      declaration || null, willingCaptain ? 1 : 0
+      declaration || null, willingCaptain ? 1 : 0, clientIp
     )
 
     res.status(201).json({

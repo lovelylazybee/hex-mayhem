@@ -14,9 +14,12 @@ router.post('/', (req: Request, res: Response): void => {
       return
     }
 
+    // 记录举报人IP
+    const clientIp = req.headers['x-forwarded-for'] as string || req.headers['x-real-ip'] as string || req.socket.remoteAddress || ''
+
     db.prepare(
-      'INSERT INTO reports (type, url, description, contact) VALUES (?, ?, ?, ?)'
-    ).run(type, url || '', description, contact || '')
+      'INSERT INTO reports (type, url, description, contact, ip_address) VALUES (?, ?, ?, ?, ?)'
+    ).run(type, url || '', description, contact || '', clientIp)
 
     res.json({ success: true, data: null })
   } catch (error) {
