@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { AlertTriangle, Shield, Mail, Phone, FileWarning } from 'lucide-react';
 import HexButton from '@/components/HexButton';
+import { reportApi } from '@/lib/api';
 
 const reportTypes = [
   '危害国家安全',
@@ -22,10 +23,21 @@ export default function Report() {
     contact: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setSubmitting(true);
+    setError('');
+    try {
+      await reportApi.submit(form);
+      setSubmitted(true);
+    } catch (err: any) {
+      setError(err.message || '提交失败，请稍后重试');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -129,8 +141,14 @@ export default function Report() {
             />
           </div>
 
-          <HexButton type="submit" variant="primary" className="w-full">
-            提交举报
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">
+              {error}
+            </div>
+          )}
+
+          <HexButton type="submit" variant="primary" className="w-full" disabled={submitting}>
+            {submitting ? '提交中...' : '提交举报'}
           </HexButton>
         </form>
       </motion.div>

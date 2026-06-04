@@ -25,6 +25,7 @@ import AdminRunes from '@/pages/admin/Runes';
 import AdminMatches from '@/pages/admin/Matches';
 import AdminContent from '@/pages/admin/Content';
 import AdminUsers from '@/pages/admin/Users';
+import AdminReports from '@/pages/admin/Reports';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, mustChangePassword, loading } = useAuthStore();
@@ -79,6 +80,7 @@ export default function App() {
           <Route path="matches" element={<AdminMatches />} />
           <Route path="content" element={<AdminContent />} />
           <Route path="users" element={<AdminUsers />} />
+          <Route path="reports" element={<AdminReports />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

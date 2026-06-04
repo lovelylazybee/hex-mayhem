@@ -35,6 +35,12 @@ export default function Footer() {
               >
                 不良信息举报
               </Link>
+              <Link
+                to="/info-security"
+                className="text-gray-500 hover:text-hex-cyan transition-colors text-xs"
+              >
+                信息安全管理制度
+              </Link>
               <a
                 href="#"
                 className="text-gray-500 hover:text-hex-purple transition-colors"

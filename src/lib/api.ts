@@ -177,3 +177,11 @@ export const hallOfFameApi = {
   addMoment: (id: number, data: any) => api.post<any>(`/hall-of-fame/${id}/moments`, data),
   addSponsor: (id: number, data: any) => api.post<any>(`/hall-of-fame/${id}/sponsors`, data),
 };
+
+export const reportApi = {
+  submit: (data: { type: string; url?: string; description: string; contact?: string }) =>
+    api.post<any>('/reports', data),
+  getAll: (params?: string) => api.get<any>(`/reports${params ? `?${params}` : ''}`),
+  update: (id: number, data: any) => api.put<any>(`/reports/${id}`, data),
+  delete: (id: number) => api.delete(`/reports/${id}`),
+};
