@@ -17,7 +17,7 @@ function getRankScore(rank: string): number {
   return 3
 }
 
-router.get('/', (req: Request, res: Response): void => {
+router.get('/', authMiddleware, (req: Request, res: Response): void => {
   try {
     const { seasonId } = req.query
     let teams: any[]
@@ -39,7 +39,7 @@ router.get('/', (req: Request, res: Response): void => {
   }
 })
 
-router.get('/:id', (req: Request, res: Response): void => {
+router.get('/:id', authMiddleware, (req: Request, res: Response): void => {
   try {
     const team = db.prepare('SELECT * FROM teams WHERE id = ?').get(req.params.id) as any
     if (!team) {
@@ -59,6 +59,10 @@ router.post('/', authMiddleware, adminMiddleware, (req: Request, res: Response):
     const { seasonId, name } = req.body
     if (!seasonId || !name) {
       res.status(400).json({ success: false, error: '赛季ID和战队名称不能为空' })
+      return
+    }
+    if (name.length > 30) {
+      res.status(400).json({ success: false, error: '战队名称不能超过30个字符' })
       return
     }
 

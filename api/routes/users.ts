@@ -7,7 +7,7 @@ const router = Router()
 
 router.get('/', authMiddleware, adminMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
-    const users = db.prepare('SELECT id, username, email, role, created_at FROM users ORDER BY created_at DESC').all() as any[]
+    const users = db.prepare('SELECT id, username, role, created_at FROM users ORDER BY created_at DESC').all() as any[]
     res.json({ success: true, data: camelCaseResponse(users) })
   } catch (error) {
     res.status(500).json({ success: false, error: '获取用户列表失败' })
@@ -31,7 +31,7 @@ router.put('/:id', authMiddleware, adminMiddleware, async (req: Request, res: Re
     }
 
     db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, id)
-    const user = db.prepare('SELECT id, username, email, role, created_at FROM users WHERE id = ?').get(id) as any
+    const user = db.prepare('SELECT id, username, role, created_at FROM users WHERE id = ?').get(id) as any
     res.json({ success: true, data: camelCaseResponse(user) })
   } catch (error) {
     res.status(500).json({ success: false, error: '更新用户失败' })

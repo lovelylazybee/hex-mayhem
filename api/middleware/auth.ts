@@ -1,8 +1,13 @@
 import { type Request, type Response, type NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'hxm-s7-$3cur3-k3y-2026!@#zXcVbN'
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'hxm-s7-r3fr3sh-k3y-2026!@#mNbVcXz'
+const JWT_SECRET = process.env.JWT_SECRET
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET
+
+if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
+  console.error('❌ JWT_SECRET 和 JWT_REFRESH_SECRET 环境变量必须设置！')
+  process.exit(1)
+}
 const JWT_EXPIRES_IN = '2h'
 const JWT_REFRESH_EXPIRES_IN = '30d'
 

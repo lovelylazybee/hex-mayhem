@@ -197,10 +197,12 @@ function seedData() {
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number }
   if (userCount.count > 0) return
 
-  const adminHash = bcryptjs.hashSync('admin123', 10)
+  const adminHash = bcryptjs.hashSync('HexMayhem@2026!Admin', 10)
   db.prepare(
     `INSERT INTO users (username, password_hash, role, must_change_password) VALUES (?, ?, 'admin', 1)`
   ).run('admin', adminHash)
+
+  console.log('⚠️  默认管理员账号已创建，请立即登录修改密码！用户名: admin, 密码: HexMayhem@2026!Admin')
 
   db.prepare(
     `INSERT INTO seasons (number, title, subtitle, status, start_date, end_date, registration_deadline, rules, prizes, timeline) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`

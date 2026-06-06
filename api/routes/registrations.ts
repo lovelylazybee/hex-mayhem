@@ -14,6 +14,24 @@ router.post('/', authMiddleware, (req: Request, res: Response): void => {
       return
     }
 
+    // 输入长度验证
+    if (gameId.length > 50) {
+      res.status(400).json({ success: false, error: '游戏ID不能超过50个字符' })
+      return
+    }
+    if (contactInfo.length > 100) {
+      res.status(400).json({ success: false, error: '联系方式不能超过100个字符' })
+      return
+    }
+    if (declaration && declaration.length > 200) {
+      res.status(400).json({ success: false, error: '参赛宣言不能超过200个字符' })
+      return
+    }
+    if (!Array.isArray(preferredPositions) || preferredPositions.length === 0) {
+      res.status(400).json({ success: false, error: '请至少选择一个偏好位置' })
+      return
+    }
+
     // 敏感词过滤
     const sensitiveWords = ['枪支', '弹药', '毒品', '赌博网站', '色情', '代开发票', '办证', '贷款', '刷单', '兼职', 'vpn', '翻墙', '法轮', '反动', '暴恐']
     const checkText = (text: string) => sensitiveWords.some(w => text.toLowerCase().includes(w))
@@ -144,6 +162,12 @@ router.put('/:id', authMiddleware, (req: Request, res: Response): void => {
 
     if (existing.user_id !== req.user!.id && req.user!.role !== 'admin') {
       res.status(403).json({ success: false, error: '无权修改此报名信息' })
+      return
+    }
+
+    // 已通过审核的报名不允许普通用户修改
+    if (existing.status === 'approved' && req.user!.role !== 'admin') {
+      res.status(403).json({ success: false, error: '已通过审核的报名信息不可修改' })
       return
     }
 
