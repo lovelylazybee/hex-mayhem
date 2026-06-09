@@ -185,3 +185,8 @@ export const reportApi = {
   update: (id: number, data: any) => api.put<any>(`/reports/${id}`, data),
   delete: (id: number) => api.delete(`/reports/${id}`),
 };
+
+export const hextechApi = {
+  getAll: (params?: string) => api.get<any[]>(`/hextech${params ? `?${params}` : ''}`),
+  getBySlug: (slug: string) => api.get<any>(`/hextech/${slug}`),
+};

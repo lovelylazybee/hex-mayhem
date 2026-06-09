@@ -17,6 +17,8 @@ import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import UserAgreement from '@/pages/UserAgreement';
 import Report from '@/pages/Report';
 import InfoSecurity from '@/pages/InfoSecurity';
+import HextechOverview from '@/pages/HextechOverview';
+import HextechDetail from '@/pages/HextechDetail';
 import AdminDashboard from '@/pages/admin/Dashboard';
 import AdminSeasons from '@/pages/admin/Seasons';
 import AdminRegistrations from '@/pages/admin/Registrations';
@@ -69,6 +71,8 @@ export default function App() {
           <Route path="/agreement" element={<UserAgreement />} />
           <Route path="/report" element={<Report />} />
           <Route path="/info-security" element={<InfoSecurity />} />
+          <Route path="/hextech" element={<HextechOverview />} />
+          <Route path="/hextech/:slug" element={<HextechDetail />} />
         </Route>
 
         <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>

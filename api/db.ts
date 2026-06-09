@@ -158,6 +158,25 @@ export function initDatabase() {
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS hextech_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      slug TEXT NOT NULL UNIQUE,
+      description TEXT NOT NULL,
+      tier TEXT NOT NULL CHECK(tier IN ('prismatic', 'gold', 'silver')),
+      image_url TEXT,
+      lore TEXT,
+      category TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS hextech_champions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hextech_id INTEGER NOT NULL REFERENCES hextech_items(id) ON DELETE CASCADE,
+      champion_name TEXT NOT NULL,
+      champion_title TEXT,
+      champion_image TEXT
+    );
   `)
 
   try {
@@ -188,6 +207,9 @@ export function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_draw_records_team ON draw_records(team_id);
     CREATE INDEX IF NOT EXISTS idx_sponsors_season ON sponsors(season_number);
     CREATE INDEX IF NOT EXISTS idx_verification_codes_code ON verification_codes(code);
+    CREATE INDEX IF NOT EXISTS idx_hextech_items_tier ON hextech_items(tier);
+    CREATE INDEX IF NOT EXISTS idx_hextech_items_slug ON hextech_items(slug);
+    CREATE INDEX IF NOT EXISTS idx_hextech_champions_hextech ON hextech_champions(hextech_id);
   `)
 
   seedData()
@@ -324,6 +346,153 @@ function seedData() {
     }
     for (const sponsor of entry.sponsors) {
       insertSponsor.run(sponsor.name, sponsor.season)
+    }
+  }
+
+  // Seed hextech items
+  const hextechCount = db.prepare('SELECT COUNT(*) as count FROM hextech_items').get() as { count: number }
+  if (hextechCount.count === 0) {
+    const hextechData = [
+      {
+        name: '海克斯科技脉冲', slug: 'hextech-pulse', tier: 'prismatic', category: '武器',
+        description: '蕴含皮尔特沃夫最尖端科技的能量脉冲，能在瞬间释放毁灭性的海克斯能量波。',
+        lore: '由杰斯亲自设计的海克斯脉冲核心，原本用于守护皮尔特沃夫的城市防线。当海克斯水晶与精密的机械结构完美融合，便诞生了这件足以改变战局的造物。传说中，只有最顶尖的海克斯工程师才能驾驭它的力量。',
+        champions: [
+          { name: '杰斯', title: '未来守护者' },
+          { name: '维克托', title: '机械先驱' },
+          { name: '艾克', title: '时间奇才' },
+        ]
+      },
+      {
+        name: '虚空裂隙核心', slug: 'void-rift-core', tier: 'prismatic', category: '核心',
+        description: '从虚空深处提取的不稳定能量核心，散发着令人不安的紫黑色光芒。',
+        lore: '虚空裂隙核心是在艾卡西亚废墟中被发现的远古遗物。它蕴含着跨越维度的虚空能量，能够撕裂现实的帷幕。马尔扎扎坚信这是虚空的意志具象化，而维克托则试图将其力量纳入海克斯科技的框架之中。',
+        champions: [
+          { name: '马尔扎哈', title: '虚空先知' },
+          { name: '卡莎', title: '虚空之女' },
+          { name: '凯隐', title: '影流之镰' },
+          { name: '维克兹', title: '虚空之眼' },
+        ]
+      },
+      {
+        name: '星灵之冠', slug: 'celestial-crown', tier: 'prismatic', category: '饰品',
+        description: '巨神峰星灵赐予的至高冠冕，佩戴者可获得星界力量的加持。',
+        lore: '星灵之冠是巨神峰顶的星灵议会所铸造的神器，每一颗镶嵌的宝石都代表着一个星系的祝福。据说，当所有宝石同时闪耀时，佩戴者将获得短暂的全知全能之力。潘森曾以此冠在战场上所向披靡。',
+        champions: [
+          { name: '潘森', title: '不屈之枪' },
+          { name: '蕾欧娜', title: '曙光女神' },
+          { name: '黛安娜', title: '皎月女神' },
+        ]
+      },
+      {
+        name: '龙魂熔炉', slug: 'dragon-soul-forge', tier: 'prismatic', category: '核心',
+        description: '以远古巨龙之魂为燃料的熔炉，可锻造出蕴含龙族之力的装备。',
+        lore: '龙魂熔炉的起源已不可考，但铸龙族的后裔们世代守护着这个秘密。每当巨龙陨落，其灵魂便会被吸入熔炉之中，化为永不熄灭的龙焰。希瓦娜的龙血与熔炉产生了共鸣，使她成为了唯一能操控熔炉的人。',
+        champions: [
+          { name: '希瓦娜', title: '龙血武姬' },
+          { name: '奥瑞利安·索尔', title: '铸星龙王' },
+          { name: '斯莫德', title: '凛冬之焰' },
+        ]
+      },
+      {
+        name: '暗影岛魂匣', slug: 'shadow-isle-soulbox', tier: 'gold', category: '饰品',
+        description: '封印着暗影岛亡灵的魂匣，能释放出腐蚀生者灵魂的黑雾。',
+        lore: '暗影岛的诅咒并非一朝一夕形成。魂匣中封印着破败之咒最原始的碎片，每一缕黑雾都是一个未得安息的灵魂。莫德凯撒曾试图收集所有魂匣以重建他的暗影帝国，而赫卡里姆则渴望释放其中的力量来重塑自己的肉身。',
+        champions: [
+          { name: '莫德凯撒', title: '铁铠冥魂' },
+          { name: '赫卡里姆', title: '战争之影' },
+          { name: '卡莉丝塔', title: '复仇之矛' },
+        ]
+      },
+      {
+        name: '弗雷尔卓德冰晶', slug: 'freljord-crystal', tier: 'gold', category: '材料',
+        description: '产自弗雷尔卓德永冻之地的冰晶，蕴含着凛冬的原始力量。',
+        lore: '弗雷尔卓德的冰晶并非普通的冰块，而是远古冰霜守望者留下的力量结晶。丽桑卓用这些冰晶编织了她的暗冰魔法，而艾希则将其化为寒冰箭矢。每一块冰晶都承载着弗雷尔卓德三姐妹千年恩怨的回响。',
+        champions: [
+          { name: '艾希', title: '寒冰射手' },
+          { name: '丽桑卓', title: '冰霜女巫' },
+          { name: '瑟庄妮', title: '凛冬之怒' },
+          { name: '丽桑卓', title: '冰霜女巫' },
+        ]
+      },
+      {
+        name: '诺克萨斯战刃', slug: 'noxus-warblade', tier: 'gold', category: '武器',
+        description: '在诺克萨斯的血炉中锻造的战刃，饮血越多越锋利。',
+        lore: '诺克萨斯的铁匠们信奉一个简单的真理——最好的武器是在战场上被鲜血淬炼过的。每一把战刃都经历了无数次战斗的洗礼，刀刃上残留的血迹不是瑕疵，而是荣誉的勋章。德莱厄斯的战刃据说已经斩断了上千个敌人的武器。',
+        champions: [
+          { name: '德莱厄斯', title: '诺克萨斯之手' },
+          { name: '德莱文', title: '荣耀行刑官' },
+          { name: '斯维因', title: '诺克萨斯统领' },
+        ]
+      },
+      {
+        name: '艾欧尼亚灵石', slug: 'ionia-spiritstone', tier: 'gold', category: '材料',
+        description: '蕴含艾欧尼亚精神之力的灵石，能引导自然元素的力量。',
+        lore: '艾欧尼亚的灵石是这片土地的意志结晶。每一块灵石都与艾欧尼亚的精神网络相连，能够感知到自然界的微妙变化。卡尔玛用灵石来引导精神之力，而李青则通过灵石来磨练自己的感知能力。',
+        champions: [
+          { name: '卡尔玛', title: '天启者' },
+          { name: '李青', title: '盲僧' },
+          { name: '亚索', title: '疾风剑豪' },
+          { name: '辛德拉', title: '暗黑元首' },
+        ]
+      },
+      {
+        name: '比尔吉沃特朗姆酒', slug: 'bilgewater-rum', tier: 'silver', category: '消耗品',
+        description: '比尔吉沃特酒馆中最烈的朗姆酒，据说能让人暂时忘却恐惧。',
+        lore: '在比尔吉沃特的每一个码头酒馆里，都能找到这种琥珀色的烈酒。水手们相信，在出海前喝上一口，就能获得海神的庇佑。普朗克用朗姆酒来激励他的船员，而莎拉则更喜欢用它来庆祝又一场胜利。',
+        champions: [
+          { name: '普朗克', title: '海洋之灾' },
+          { name: '莎拉', title: '赏金猎人' },
+          { name: '菲兹', title: '潮汐海灵' },
+        ]
+      },
+      {
+        name: '祖安微光药剂', slug: 'zaun-shimmer-potion', tier: 'silver', category: '消耗品',
+        description: '祖安炼金术士调配的微光药剂，能短暂增强身体机能但伴随副作用。',
+        lore: '微光是祖安地下城最流行的增强药剂，它能让使用者在短时间内获得超乎常人的力量和速度。然而，微光的副作用同样可怕——长期使用会导致身体变异。辛吉德一直在研究如何消除副作用，而沃里克就是他实验的产物之一。',
+        champions: [
+          { name: '辛吉德', title: '炼金术士' },
+          { name: '沃里克', title: '祖安怒兽' },
+          { name: '维克托', title: '机械先驱' },
+        ]
+      },
+      {
+        name: '德玛西亚坚盾', slug: 'demacia-shield', tier: 'silver', category: '防具',
+        description: '由德玛西亚禁魔石铸造的坚盾，能抵御魔法攻击。',
+        lore: '德玛西亚的禁魔石是抵御魔法最有效的材料。每一面坚盾都由禁魔石与精钢合金铸造，能够吸收并分散魔法能量。盖伦的坚盾曾挡下过无数法师的攻击，而波比的盾牌更是传说中能承受巨龙一击的神器。',
+        champions: [
+          { name: '盖伦', title: '德玛西亚之力' },
+          { name: '波比', title: '圣锤之毅' },
+          { name: '拉克丝', title: '光辉女郎' },
+        ]
+      },
+      {
+        name: '恕瑞玛太阳盘', slug: 'shurima-sundisc', tier: 'silver', category: '饰品',
+        description: '恕瑞玛沙漠中发掘的太阳盘碎片，仍残留着远古太阳祭司的力量。',
+        lore: '太阳盘是恕瑞玛帝国的象征，也是飞升仪式的核心。当太阳圆盘完整时，它能够将凡人转化为半神般的飞升者。如今残存的碎片虽然力量大不如前，但仍然蕴含着令人敬畏的太阳之力。阿兹尔正是借助太阳盘的力量完成了飞升。',
+        champions: [
+          { name: '阿兹尔', title: '沙漠皇帝' },
+          { name: '内瑟斯', title: '沙漠死神' },
+          { name: '泽拉斯', title: '远古巫灵' },
+        ]
+      },
+    ]
+
+    const insertHextech = db.prepare(
+      'INSERT INTO hextech_items (name, slug, description, tier, image_url, lore, category) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    )
+    const insertChampion = db.prepare(
+      'INSERT INTO hextech_champions (hextech_id, champion_name, champion_title, champion_image) VALUES (?, ?, ?, ?)'
+    )
+
+    for (const item of hextechData) {
+      const result = insertHextech.run(
+        item.name, item.slug, item.description, item.tier, null, item.lore, item.category
+      )
+      const hextechId = result.lastInsertRowid as number
+      for (const champ of item.champions) {
+        insertChampion.run(hextechId, champ.name, champ.title, null)
+      }
     }
   }
 

@@ -10,6 +10,7 @@ const navItems = [
   { path: '/rules', label: '赛制公告' },
   { path: '/register', label: '报名' },
   { path: '/hexcard', label: '海克斯抽卡' },
+  { path: '/hextech', label: '海克斯总览' },
   { path: '/hall-of-fame', label: '荣誉殿堂' },
   { path: '/schedule', label: '赛程积分' },
 ];
@@ -40,7 +41,7 @@ export default function Navbar() {
                 to={item.path}
                 className={cn(
                   'px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300',
-                  location.pathname === item.path
+                  location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path))
                     ? 'text-hex-cyan glow-text-cyan bg-hex-purple/10'
                     : 'text-gray-300 hover:text-white hover:bg-hex-card/50'
                 )}

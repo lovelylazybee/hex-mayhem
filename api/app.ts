@@ -21,6 +21,7 @@ import verificationCodeRoutes from './routes/verification-codes.js'
 import uploadRoutes from './routes/upload.js'
 import userRoutes from './routes/users.js'
 import reportRoutes from './routes/reports.js'
+import hextechRoutes from './routes/hextech.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -71,6 +72,7 @@ app.use('/api/verification-codes', verificationCodeRoutes)
 app.use('/api/upload', uploadRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/reports', reportRoutes)
+app.use('/api/hextech', hextechRoutes)
 
 app.use(
   '/api/health',
