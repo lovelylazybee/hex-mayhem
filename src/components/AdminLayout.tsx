@@ -12,7 +12,6 @@ import {
   Menu,
   X,
   ChevronLeft,
-  ShieldAlert,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
@@ -25,7 +24,6 @@ const adminNavItems = [
   { path: '/admin/runes', label: '符文管理', icon: Sparkles },
   { path: '/admin/matches', label: '赛程管理', icon: Calendar },
   { path: '/admin/content', label: '内容管理', icon: FileText },
-  { path: '/admin/reports', label: '举报管理', icon: ShieldAlert },
   { path: '/admin/users', label: '用户管理', icon: UserCog },
 ];
 

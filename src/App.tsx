@@ -15,8 +15,6 @@ import Profile from '@/pages/Profile';
 import ChangePassword from '@/pages/ChangePassword';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import UserAgreement from '@/pages/UserAgreement';
-import Report from '@/pages/Report';
-import InfoSecurity from '@/pages/InfoSecurity';
 import AdminDashboard from '@/pages/admin/Dashboard';
 import AdminSeasons from '@/pages/admin/Seasons';
 import AdminRegistrations from '@/pages/admin/Registrations';
@@ -25,7 +23,6 @@ import AdminRunes from '@/pages/admin/Runes';
 import AdminMatches from '@/pages/admin/Matches';
 import AdminContent from '@/pages/admin/Content';
 import AdminUsers from '@/pages/admin/Users';
-import AdminReports from '@/pages/admin/Reports';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, mustChangePassword, loading } = useAuthStore();
@@ -67,8 +64,6 @@ export default function App() {
           <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/agreement" element={<UserAgreement />} />
-          <Route path="/report" element={<Report />} />
-          <Route path="/info-security" element={<InfoSecurity />} />
         </Route>
 
         <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
@@ -80,7 +75,6 @@ export default function App() {
           <Route path="matches" element={<AdminMatches />} />
           <Route path="content" element={<AdminContent />} />
           <Route path="users" element={<AdminUsers />} />
-          <Route path="reports" element={<AdminReports />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
