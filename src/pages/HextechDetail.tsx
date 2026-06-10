@@ -1,17 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Diamond, ShieldCheck, Coins, BookOpen, Users } from 'lucide-react';
+import { ArrowLeft, Diamond, ShieldCheck, Coins } from 'lucide-react';
 import { hextechApi } from '@/lib/api';
-import GlowCard from '@/components/GlowCard';
-
-interface HextechChampion {
-  id: number;
-  hextechId: number;
-  championName: string;
-  championTitle: string;
-  championImage: string | null;
-}
 
 interface HextechItem {
   id: number;
@@ -20,12 +11,11 @@ interface HextechItem {
   description: string;
   tier: string;
   imageUrl: string | null;
-  lore: string;
-  category: string;
-  champions: HextechChampion[];
+  lore: string | null;
+  category: string | null;
 }
 
-const tierConfig: Record<string, { label: string; color: string; border: string; bg: string; icon: any; glowColor: string }> = {
+const tierConfig: Record<string, { label: string; color: string; border: string; bg: string; icon: any; glowColor: string; gradient: string }> = {
   prismatic: {
     label: '棱彩阶',
     color: 'text-pink-400',
@@ -33,6 +23,7 @@ const tierConfig: Record<string, { label: string; color: string; border: string;
     bg: 'bg-pink-500/10',
     icon: Diamond,
     glowColor: 'purple',
+    gradient: 'from-pink-500/20 to-purple-500/20',
   },
   gold: {
     label: '黄金阶',
@@ -41,6 +32,7 @@ const tierConfig: Record<string, { label: string; color: string; border: string;
     bg: 'bg-hex-gold/10',
     icon: ShieldCheck,
     glowColor: 'gold',
+    gradient: 'from-hex-gold/20 to-yellow-600/20',
   },
   silver: {
     label: '白银阶',
@@ -49,6 +41,7 @@ const tierConfig: Record<string, { label: string; color: string; border: string;
     bg: 'bg-blue-400/10',
     icon: Coins,
     glowColor: 'cyan',
+    gradient: 'from-blue-400/20 to-cyan-500/20',
   },
 };
 
@@ -62,7 +55,7 @@ export default function HextechDetail() {
     if (!slug) return;
     setLoading(true);
     setNotFound(false);
-    hextechApi.getBySlug(slug)
+    hextechApi.getBySlug(decodeURIComponent(slug))
       .then((data: any) => {
         setItem(data);
       })
@@ -118,86 +111,65 @@ export default function HextechDetail() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        className="bg-hex-card/80 backdrop-blur-sm border border-hex-border rounded-xl overflow-hidden mb-8"
       >
-        <GlowCard glowColor={config.glowColor} className="mb-8">
-          <div className="flex flex-col sm:flex-row items-start gap-5">
-            <div className={`w-16 h-16 rounded-xl ${config.bg} border ${config.border} flex items-center justify-center flex-shrink-0`}>
-              <Icon size={32} className={config.color} />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2 flex-wrap">
-                <h1 className={`font-orbitron text-2xl font-bold ${config.color}`}>
-                  {item.name}
-                </h1>
-                <span className={`text-xs px-2.5 py-1 rounded-full border ${config.border} ${config.color} font-bold`}>
-                  {config.label}
-                </span>
-                <span className="text-xs px-2.5 py-1 rounded-full bg-hex-dark/50 border border-hex-border text-gray-400">
-                  {item.category}
-                </span>
-              </div>
-              <p className="text-gray-300 leading-relaxed">{item.description}</p>
-            </div>
+        <div className="flex flex-col md:flex-row">
+          {/* 图片区域 */}
+          <div className={`md:w-64 flex-shrink-0 bg-gradient-to-br ${config.gradient} flex items-center justify-center p-6`}>
+            {item.imageUrl ? (
+              <img
+                src={item.imageUrl}
+                alt={item.name}
+                className="w-full max-w-[200px] h-auto object-contain"
+              />
+            ) : (
+              <Icon size={80} className={`${config.color} opacity-30`} />
+            )}
           </div>
-        </GlowCard>
+
+          {/* 信息区域 */}
+          <div className="flex-1 p-6">
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
+              <h1 className={`font-orbitron text-2xl font-bold ${config.color}`}>
+                {item.name}
+              </h1>
+              <span className={`text-xs px-2.5 py-1 rounded-full border ${config.border} ${config.color} font-bold`}>
+                {config.label}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center`}>
+                <Icon size={16} className={config.color} />
+              </div>
+              <span className={`text-sm font-medium ${config.color}`}>{config.label}海克斯</span>
+            </div>
+            <p className="text-gray-300 leading-relaxed whitespace-pre-line">{item.description}</p>
+          </div>
+        </div>
       </motion.div>
 
-      {/* 背景故事 */}
-      {item.lore && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="mb-8"
-        >
-          <GlowCard glowColor="purple">
-            <div className="flex items-center gap-2 mb-4">
-              <BookOpen size={18} className="text-hex-purple" />
-              <h2 className="font-orbitron text-lg font-bold text-white">背景故事</h2>
-            </div>
-            <p className="text-gray-300 leading-relaxed whitespace-pre-line">{item.lore}</p>
-          </GlowCard>
-        </motion.div>
-      )}
-
-      {/* 关联英雄 */}
-      {item.champions && item.champions.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <div className="flex items-center gap-2 mb-5">
-            <Users size={18} className="text-hex-cyan" />
-            <h2 className="font-orbitron text-lg font-bold text-white">关联英雄</h2>
-            <span className="text-xs text-gray-500">({item.champions.length})</span>
+      {/* 阶位说明 */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="bg-hex-card/80 backdrop-blur-sm border border-hex-border rounded-xl p-6"
+      >
+        <h2 className="font-orbitron text-lg font-bold text-white mb-3">阶位说明</h2>
+        <div className="flex items-center gap-3">
+          <div className={`w-10 h-10 rounded-lg ${config.bg} border ${config.border} flex items-center justify-center flex-shrink-0`}>
+            <Icon size={20} className={config.color} />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {item.champions.map((champ, i) => (
-              <motion.div
-                key={champ.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.25 + i * 0.05 }}
-              >
-                <div className="bg-hex-card/80 backdrop-blur-sm border border-hex-border rounded-xl p-4 hover:border-hex-purple/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(124,77,255,0.2)]">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-hex-gradient flex items-center justify-center flex-shrink-0">
-                      <span className="font-orbitron text-lg font-bold text-white">
-                        {champ.championName.charAt(0)}
-                      </span>
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-white">{champ.championName}</h3>
-                      <p className="text-sm text-gray-400">{champ.championTitle}</p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+          <div>
+            <p className={`font-bold ${config.color}`}>{config.label}</p>
+            <p className="text-gray-400 text-sm">
+              {item.tier === 'prismatic' && '棱彩阶是最高品阶的海克斯，拥有最强大的效果和改变战局的能力。'}
+              {item.tier === 'gold' && '黄金阶海克斯拥有强力的增益效果，能显著提升作战能力。'}
+              {item.tier === 'silver' && '白银阶海克斯提供基础属性加成，是构建战术的基石。'}
+            </p>
           </div>
-        </motion.div>
-      )}
+        </div>
+      </motion.div>
     </div>
   );
 }

@@ -4,14 +4,6 @@ import { motion } from 'framer-motion';
 import { Search, Diamond, ShieldCheck, Coins, Sparkles } from 'lucide-react';
 import { hextechApi } from '@/lib/api';
 
-interface HextechChampion {
-  id: number;
-  hextechId: number;
-  championName: string;
-  championTitle: string;
-  championImage: string | null;
-}
-
 interface HextechItem {
   id: number;
   name: string;
@@ -19,12 +11,11 @@ interface HextechItem {
   description: string;
   tier: string;
   imageUrl: string | null;
-  lore: string;
-  category: string;
-  champions: HextechChampion[];
+  lore: string | null;
+  category: string | null;
 }
 
-const tierConfig: Record<string, { label: string; color: string; border: string; bg: string; icon: any; glow: string }> = {
+const tierConfig: Record<string, { label: string; color: string; border: string; bg: string; icon: any; glow: string; gradient: string }> = {
   prismatic: {
     label: '棱彩阶',
     color: 'text-pink-400',
@@ -32,6 +23,7 @@ const tierConfig: Record<string, { label: string; color: string; border: string;
     bg: 'bg-pink-500/10',
     icon: Diamond,
     glow: 'hover:shadow-[0_0_30px_rgba(236,72,153,0.4)]',
+    gradient: 'from-pink-500/20 to-purple-500/20',
   },
   gold: {
     label: '黄金阶',
@@ -40,6 +32,7 @@ const tierConfig: Record<string, { label: string; color: string; border: string;
     bg: 'bg-hex-gold/10',
     icon: ShieldCheck,
     glow: 'hover:shadow-[0_0_30px_rgba(255,215,0,0.4)]',
+    gradient: 'from-hex-gold/20 to-yellow-600/20',
   },
   silver: {
     label: '白银阶',
@@ -48,6 +41,7 @@ const tierConfig: Record<string, { label: string; color: string; border: string;
     bg: 'bg-blue-400/10',
     icon: Coins,
     glow: 'hover:shadow-[0_0_30px_rgba(96,165,250,0.4)]',
+    gradient: 'from-blue-400/20 to-cyan-500/20',
   },
 };
 
@@ -78,9 +72,7 @@ export default function HextechOverview() {
       result = result.filter(
         (item) =>
           item.name.toLowerCase().includes(q) ||
-          item.description.toLowerCase().includes(q) ||
-          item.category.toLowerCase().includes(q) ||
-          item.champions.some((c) => c.championName.toLowerCase().includes(q))
+          item.description.toLowerCase().includes(q)
       );
     }
     return result;
@@ -120,7 +112,7 @@ export default function HextechOverview() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="搜索海克斯物品、分类或关联英雄..."
+            placeholder="搜索海克斯名称或效果..."
             className="hex-input-glow pl-11 pr-4"
           />
         </div>
@@ -174,50 +166,42 @@ export default function HextechOverview() {
           <p className="text-gray-500">未找到匹配的海克斯物品</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {filteredItems.map((item, i) => {
             const config = tierConfig[item.tier] || tierConfig.silver;
-            const Icon = config.icon;
             return (
               <motion.div
                 key={item.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: Math.min(i * 0.03, 0.5) }}
               >
-                <Link to={`/hextech/${item.slug}`} className="block">
+                <Link to={`/hextech/${encodeURIComponent(item.slug)}`} className="block">
                   <div
-                    className={`bg-hex-card/80 backdrop-blur-sm border ${config.border} rounded-xl p-5 transition-all duration-300 ${config.glow} hover:scale-[1.02] h-full flex flex-col`}
+                    className={`bg-hex-card/80 backdrop-blur-sm border ${config.border} rounded-xl overflow-hidden transition-all duration-300 ${config.glow} hover:scale-[1.03] group`}
                   >
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className={`w-10 h-10 rounded-lg ${config.bg} flex items-center justify-center flex-shrink-0`}>
-                        <Icon size={20} className={config.color} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className={`font-bold text-lg ${config.color} truncate`}>{item.name}</h3>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className={`text-xs px-2 py-0.5 rounded-full border ${config.border} ${config.color}`}>
-                            {config.label}
-                          </span>
-                          <span className="text-xs text-gray-500">{item.category}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-gray-400 text-sm leading-relaxed flex-1 line-clamp-3 mb-3">
-                      {item.description}
-                    </p>
-                    <div className="flex items-center gap-1 flex-wrap">
-                      {item.champions.slice(0, 3).map((champ) => (
-                        <span
-                          key={champ.id}
-                          className="text-xs px-2 py-0.5 bg-hex-dark/50 border border-hex-border rounded-full text-gray-400"
-                        >
-                          {champ.championName}
-                        </span>
-                      ))}
-                      {item.champions.length > 3 && (
-                        <span className="text-xs text-gray-500">+{item.champions.length - 3}</span>
+                    {/* 图片区域 */}
+                    <div className={`relative aspect-square bg-gradient-to-br ${config.gradient} flex items-center justify-center overflow-hidden`}>
+                      {item.imageUrl ? (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <Diamond size={40} className={`${config.color} opacity-30`} />
                       )}
+                      {/* 阶位标签 */}
+                      <span className={`absolute top-2 right-2 text-[10px] px-1.5 py-0.5 rounded-full border ${config.border} ${config.color} ${config.bg} font-bold`}>
+                        {config.label}
+                      </span>
+                    </div>
+                    {/* 名称区域 */}
+                    <div className="p-3">
+                      <h3 className={`font-bold text-sm ${config.color} truncate text-center`}>
+                        {item.name}
+                      </h3>
                     </div>
                   </div>
                 </Link>
